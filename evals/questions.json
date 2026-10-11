@@ -1,0 +1,9 @@
+[
+  {
+    "id": "example-1",
+    "dataset": "example.csv",
+    "question": "What is the mean of the price column?",
+    "answer": 42.0,
+    "tolerance": 0.01
+  }
+]
