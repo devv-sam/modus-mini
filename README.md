@@ -2,8 +2,6 @@
 
 A data analysis agent. Upload a CSV, ask a question. The agent writes pandas code, runs it in a sandboxed subprocess, reads the output, and iterates until it can answer, citing the code cells it relied on.
 
-Status: scaffold. See [ROADMAP.md](ROADMAP.md).
-
 ## Setup
 
 Needs Python 3.12, [uv](https://docs.astral.sh/uv/), and Node 22+.
