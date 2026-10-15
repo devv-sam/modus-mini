@@ -22,9 +22,12 @@ def test_timeout_kills_process(tmp_path: Path) -> None:
     assert result.timed_out
 
 
-@pytest.mark.skip(reason="needs CSV fixture")
 def test_reads_csv_in_workdir(tmp_path: Path) -> None:
-    run_python("import pandas as pd; print(pd.read_csv('data.csv').shape)", tmp_path, timeout=5)
+    (tmp_path / "data.csv").write_text("a,b\n1,2\n3,4\n")  # 2 rows, 2 columns, header not counted
+    code = "import pandas as pd; print(pd.read_csv('data.csv').shape)"  # relative path, needs cwd
+    result = run_python(code, tmp_path, timeout=5)
+    assert result.returncode == 0
+    assert result.stdout == "(2, 2)\n"
 
 
 @pytest.mark.skip(reason="plots not built yet")
