@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import pytest
@@ -28,6 +29,12 @@ def test_reads_csv_in_workdir(tmp_path: Path) -> None:
     result = run_python(code, tmp_path, timeout=5)
     assert result.returncode == 0
     assert result.stdout == "(2, 2)\n"
+
+
+@pytest.mark.skipif(sys.platform != "linux", reason="rlimit not supported on macOS")
+def test_memory_limit(tmp_path: Path) -> None:
+    result = run_python("x = bytearray(2 * 1024**3)", tmp_path, timeout=5)  # 2 GB, over the cap
+    assert "MemoryError" in result.stderr
 
 
 @pytest.mark.skip(reason="plots not built yet")
