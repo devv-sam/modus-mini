@@ -37,6 +37,22 @@ def test_memory_limit(tmp_path: Path) -> None:
     assert "MemoryError" in result.stderr
 
 
-@pytest.mark.skip(reason="plots not built yet")
 def test_collects_saved_plots(tmp_path: Path) -> None:
-    run_python("open('plot.png', 'wb').write(b'')", tmp_path, timeout=5)
+    code = "import matplotlib.pyplot as plt; plt.plot([1, 2]); plt.savefig('line.png')"
+    result = run_python(code, tmp_path, timeout=10)
+    assert result.returncode == 0
+    assert result.plots == ["line.png"]
+
+
+def test_ignores_plots_from_earlier_runs(tmp_path: Path) -> None:
+    (tmp_path / "old.png").write_bytes(b"")  # left over from a previous step
+    result = run_python("open('new.png', 'wb').write(b'')", tmp_path, timeout=5)
+    assert result.plots == ["new.png"]
+
+
+def test_hides_secrets_from_child(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-secret")
+    result = run_python(
+        "import os; print(os.environ.get('ANTHROPIC_API_KEY'))", tmp_path, timeout=5
+    )
+    assert result.stdout == "None\n"

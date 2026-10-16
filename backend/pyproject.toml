@@ -5,6 +5,7 @@ requires-python = ">=3.12"
 dependencies = [
     "anthropic",
     "fastapi",
+    "matplotlib>=3.11.2",
     "pandas",
     "pydantic",
     "uvicorn",
