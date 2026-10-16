@@ -56,3 +56,15 @@ def test_hides_secrets_from_child(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
         "import os; print(os.environ.get('ANTHROPIC_API_KEY'))", tmp_path, timeout=5
     )
     assert result.stdout == "None\n"
+
+
+def test_blocks_network(tmp_path: Path) -> None:
+    code = "import urllib.request; urllib.request.urlopen('http://example.com')"  # imports ssl too
+    result = run_python(code, tmp_path, timeout=5)
+    assert result.returncode == 1
+    assert "network access is disabled" in result.stderr
+
+
+def test_traceback_points_at_cell_line(tmp_path: Path) -> None:
+    result = run_python("x = 1\nraise ValueError('line two')", tmp_path, timeout=5)
+    assert 'File "<cell>", line 2' in result.stderr

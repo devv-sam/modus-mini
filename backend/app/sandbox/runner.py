@@ -17,6 +17,18 @@ class RunResult:
 
 MEMORY_LIMIT = 1024**3  # 1 GB, pandas + numpy reserve a lot of address space at import
 
+# shortcut: stops accidental network use, not determined code, move to a container to truly block
+PREAMBLE = """
+import socket, sys
+
+class _NoNetwork(socket.socket):
+    def __init__(self, *args, **kwargs):
+        raise OSError("network access is disabled in the sandbox")
+
+socket.socket = _NoNetwork
+exec(compile(sys.argv[1], "<cell>", "exec"), {"__name__": "__main__"})
+"""
+
 
 def _limit_memory() -> None:
     """Cap the child's address space so runaway code gets a MemoryError."""
@@ -38,7 +50,7 @@ def run_python(code: str, workdir: Path, timeout: float) -> RunResult:
     }  # built from scratch so secrets never reach the child
     try:
         result = subprocess.run(
-            [sys.executable, "-c", code],
+            [sys.executable, "-c", PREAMBLE, code],  # code as argv keeps line numbers right
             cwd=workdir,
             env=env,
             capture_output=True,
